@@ -1,6 +1,7 @@
 ﻿package com.eclecticdesignstudio.motion.actuators;
 
 
+import Reflect;
 import com.eclecticdesignstudio.motion.actuators.GenericActuator;
 import flash.display.DisplayObject;
 import flash.display.Shape;
@@ -79,8 +80,11 @@ class SimpleActuator extends GenericActuator {
 			
 			if (setVisible) {
 				
+				#if js
+				Reflect.setProperty(target, "visible", cacheVisible);
+				#else
 				target.visible = cacheVisible;
-				
+				#end
 			}
 			
 		}
@@ -114,7 +118,7 @@ class SimpleActuator extends GenericActuator {
 			
 			#if haxe_209
 			
-			if (#if flash false && #end Reflect.hasField (target, i)) {
+			if (#if (js || flash) false && #end Reflect.hasField (target, i)) {
 				
 				start = Reflect.field (target, i);
 				
@@ -146,11 +150,16 @@ class SimpleActuator extends GenericActuator {
 		
 		toggleVisible = (Reflect.hasField (properties, "alpha") && Std.is (target, DisplayObject));
 		
-		if (toggleVisible && !target.visible && properties.alpha != 0) {
+		if (toggleVisible && !#if js Reflect.getProperty(target, "visible") #else target.visible #end && properties.alpha != 0) {
 			
 			setVisible = true;
+			#if js
+			cacheVisible = Reflect.getProperty(target, "visible");
+			Reflect.setProperty(target, "visible", true);
+			#else
 			cacheVisible = target.visible;
 			target.visible = true;
+			#end
 			
 		}
 		
@@ -363,8 +372,12 @@ class SimpleActuator extends GenericActuator {
 					active = false;
 					
 					if (toggleVisible && target.alpha == 0) {
-						
+
+						#if js
+						Reflect.setProperty(target, "visible", false);
+						#else
 						target.visible = false;
+						#end
 						
 					}
 					
